@@ -381,6 +381,8 @@ static void connection_send (struct UdpGwClient_connection *con, uint8_t flags, 
     
     // submit packet to buffer
     BufferWriter_EndPacket(con->send_if, out_pos);
+
+    con->last_use_time = btime_gettime();
 }
 
 static struct UdpGwClient_connection * reuse_connection (UdpGwClient *o, struct UdpGwClient_conaddr conaddr)
@@ -556,8 +558,6 @@ void UdpGwClient_SubmitPacket (UdpGwClient *o, BAddr local_addr, BAddr remote_ad
         // send packet to existing connection
         connection_send(con, flags, data, data_len);
     }
-
-    con->last_use_time = btime_gettime();
 
     // clear connection
     btime_t currTime = btime_gettime();
