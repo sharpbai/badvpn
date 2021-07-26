@@ -35,6 +35,7 @@
 #include <base/BLog.h>
 
 #include <udpgw_client/UdpGwClient.h>
+#include <udpgw/udpgw.h>
 
 #include <generated/blog_channel_UdpGwClient.h>
 
@@ -576,13 +577,13 @@ void UdpGwClient_SubmitPacket (UdpGwClient *o, BAddr local_addr, BAddr remote_ad
                 struct UdpGwClient_connection, connections_list_node);
             if (needClose) {
                 ++closed_count;
-                client_log(client, BLOG_DEBUG, "port=%d currTime=%d last_use_time=%d needClose=%d",
+                BLog(BLOG_DEBUG, "port=%d currTime=%d last_use_time=%d needClose=%d",
                     htons(con->conaddr.remote_addr.ipv4.port), currTime, con->last_use_time, needClose);
                 connection_free(con);
             }
             con = next_con;
         }
-        client_log(client, BLOG_INFO, "end cleaning, %d links exist now, %d closed",
+        BLog(BLOG_INFO, "end cleaning, %d links exist now, %d closed",
             o->num_connections, closed_count);
         o->last_clear_time = currTime;
     }
