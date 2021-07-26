@@ -86,6 +86,7 @@ struct client {
     int num_connections;
     LinkedList1 closing_connections_list;
     LinkedList1Node clients_list_node;
+    btime_t last_clear_time;
 };
 
 struct connection {
@@ -900,6 +901,35 @@ void client_recv_if_handler_send (struct client *client, uint8_t *data, int data
     } else {
         // submit packet to existing connection
         connection_send_to_udp(con, data, data_len);
+    }
+
+     // TODO: try to close more
+    btime_t currTime = btime_gettime();
+    if (currTime - client->last_clear_time > UDPGW_CONNECTION_GC_INTERVAL) {
+        struct connection *last_con;
+        last_con = UPPER_OBJECT(LinkedList1_GetLast(&client->connections_list),
+            struct connection, connections_list_node);
+        con = UPPER_OBJECT(LinkedList1_GetFirst(&client->connections_list),
+            struct connection, connections_list_node);
+        int closed_count = 0;
+        while((con != last_con) && (client->num_connections > 10)) {
+            int isDns = con->addr.ipv4.port == htons(53);
+            int expireDNS = (currTime - con->last_use_time) > DNS_CONNECTION_DISCONNECT_TIMOUT;
+            int expireUDP = (currTime - con->last_use_time) > UDP_CONNECTION_DISCONNECT_TIMOUT;
+            int needClose = (isDns && expireDNS) || ((!isDns) && expireUDP);
+            struct connection *next_con = UPPER_OBJECT(LinkedList1Node_Next(&con->connections_list_node),
+                struct connection, connections_list_node);
+            if (needClose) {
+                ++closed_count;
+                client_log(client, BLOG_DEBUG, "port=%d currTime=%d last_use_time=%d needClose=%d",
+                    htons(con->addr.ipv4.port), currTime, con->last_use_time, needClose);
+                connection_close(con);
+            }
+            con = next_con;
+        }
+        client_log(client, BLOG_INFO, "end cleaning, %d links exist now, %d closed",
+            client->num_connections, closed_count);
+        client->last_clear_time = currTime;
     }
 }
 

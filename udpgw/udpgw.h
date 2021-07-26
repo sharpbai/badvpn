@@ -50,3 +50,12 @@
 
 // SO_SNDBFUF socket option for clients, 0 to not set
 #define CLIENT_DEFAULT_SOCKET_SEND_BUFFER 1048576
+
+// how long after nothing has been transmitted on a DNS connection
+#define DNS_CONNECTION_DISCONNECT_TIMOUT 3000
+
+// how long after nothing has been transmitted on a non-DNS UDP connection
+#define UDP_CONNECTION_DISCONNECT_TIMOUT 60000
+
+// how long to perform a udpgw connection gc
+#define UDPGW_CONNECTION_GC_INTERVAL 1500

@@ -84,6 +84,7 @@ typedef struct {
     PacketProtoDecoder recv_decoder;
     PacketPassInterface recv_if;
     DebugObject d_obj;
+    btime_t last_clear_time;
 } UdpGwClient;
 
 struct UdpGwClient_conaddr {
@@ -105,6 +106,7 @@ struct UdpGwClient_connection {
     BAVLNode connections_tree_by_conaddr_node;
     BAVLNode connections_tree_by_conid_node;
     LinkedList1Node connections_list_node;
+    btime_t last_use_time;
 };
 
 int UdpGwClient_Init (UdpGwClient *o, int udp_mtu, int max_connections, int send_buffer_size, btime_t keepalive_time, BReactor *reactor, void *user,

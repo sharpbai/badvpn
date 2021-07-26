@@ -163,6 +163,8 @@ static void recv_interface_handler_send (UdpGwClient *o, uint8_t *data, int data
     // move connection to front of the list
     LinkedList1_Remove(&o->connections_list, &con->connections_list_node);
     LinkedList1_Append(&o->connections_list, &con->connections_list_node);
+
+    con->last_use_time = btime_gettime();
     
     // pass packet to user
     o->handler_received(o->user, con->conaddr.local_addr, con->conaddr.remote_addr, data, data_len);
@@ -269,6 +271,7 @@ static void connection_init (UdpGwClient *o, struct UdpGwClient_conaddr conaddr,
         goto fail1;
     }
     con->send_if = PacketProtoFlow_GetInput(&con->send_ppflow);
+    con->last_use_time = btime_gettime();
     
     // insert to connections tree by conaddr
     ASSERT_EXECUTE(BAVL_Insert(&o->connections_tree_by_conaddr, &con->connections_tree_by_conaddr_node, NULL))
@@ -551,6 +554,37 @@ void UdpGwClient_SubmitPacket (UdpGwClient *o, BAddr local_addr, BAddr remote_ad
         
         // send packet to existing connection
         connection_send(con, flags, data, data_len);
+    }
+
+    con->last_use_time = btime_gettime();
+
+    // clear connection
+    btime_t currTime = btime_gettime();
+    if (currTime - o->last_clear_time > UDPGW_CONNECTION_GC_INTERVAL) {
+        struct UdpGwClient_connection *last_con;
+        last_con = UPPER_OBJECT(LinkedList1_GetLast(&o->connections_list),
+            struct UdpGwClient_connection, connections_list_node);
+        con = UPPER_OBJECT(LinkedList1_GetFirst(&o->connections_list),
+            struct UdpGwClient_connection, connections_list_node);
+        int closed_count = 0;
+        while((con != last_con) && (o->num_connections > 10)) {
+            int isDns = con->conaddr.remote_addr.ipv4.port == htons(53);
+            int expireDNS = (currTime - con->last_use_time) > DNS_CONNECTION_DISCONNECT_TIMOUT;
+            int expireUDP = (currTime - con->last_use_time) > UDP_CONNECTION_DISCONNECT_TIMOUT;
+            int needClose = (isDns && expireDNS) || ((!isDns) && expireUDP);
+            struct UdpGwClient_connection *next_con = UPPER_OBJECT(LinkedList1Node_Next(&con->connections_list_node),
+                struct UdpGwClient_connection, connections_list_node);
+            if (needClose) {
+                ++closed_count;
+                client_log(client, BLOG_DEBUG, "port=%d currTime=%d last_use_time=%d needClose=%d",
+                    htons(con->conaddr.remote_addr.ipv4.port), currTime, con->last_use_time, needClose);
+                connection_free(con);
+            }
+            con = next_con;
+        }
+        client_log(client, BLOG_INFO, "end cleaning, %d links exist now, %d closed",
+            client->num_connections, closed_count);
+        o->last_clear_time = currTime;
     }
 }
 
