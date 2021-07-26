@@ -583,7 +583,7 @@ void UdpGwClient_SubmitPacket (UdpGwClient *o, BAddr local_addr, BAddr remote_ad
             con = next_con;
         }
         client_log(client, BLOG_INFO, "end cleaning, %d links exist now, %d closed",
-            client->num_connections, closed_count);
+            o->num_connections, closed_count);
         o->last_clear_time = currTime;
     }
 }
