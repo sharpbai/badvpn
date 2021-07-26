@@ -61,8 +61,8 @@
 
 #include <string.h>
 
-/** Initial CWND calculation as defined RFC 2581 */
-#define LWIP_TCP_CALC_INITIAL_CWND(mss) ((tcpwnd_size_t)LWIP_MIN((4U * (mss)), LWIP_MAX((2U * (mss)), 4380U)))
+/** Initial CWND calculation larger than defined RFC 2581 */
+#define LWIP_TCP_CALC_INITIAL_CWND(mss) ((tcpwnd_size_t)LWIP_MIN((10U * (mss)), LWIP_MAX((6U * (mss)), 4380U)))
 
 /* These variables are global to all functions involved in the input
    processing of TCP segments. They are set by the tcp_input()

@@ -1193,9 +1193,11 @@
  * ATTENTION: when using TCP_RCV_SCALE, TCP_WND is the total size
  * with scaling applied. Maximum window value in the TCP header
  * will be TCP_WND >> TCP_RCV_SCALE
+ * 
+ * We define a larger window
  */
 #if !defined TCP_WND || defined __DOXYGEN__
-#define TCP_WND                         (4 * TCP_MSS)
+#define TCP_WND                         (8 * TCP_MSS)
 #endif
 
 /**
@@ -1224,7 +1226,7 @@
  * LWIP_TCP_SACK_OUT==1: TCP will support sending selective acknowledgements (SACKs).
  */
 #if !defined LWIP_TCP_SACK_OUT || defined __DOXYGEN__
-#define LWIP_TCP_SACK_OUT               0
+#define LWIP_TCP_SACK_OUT               1
 #endif
 
 /**
@@ -1270,7 +1272,7 @@
  * To achieve good performance, this should be at least 2 * TCP_MSS.
  */
 #if !defined TCP_SND_BUF || defined __DOXYGEN__
-#define TCP_SND_BUF                     (2 * TCP_MSS)
+#define TCP_SND_BUF                     (4 * TCP_MSS)
 #endif
 
 /**
@@ -1386,7 +1388,7 @@
  * received in the initial SYN packet from a remote host.
  */
 #if !defined LWIP_TCP_TIMESTAMPS || defined __DOXYGEN__
-#define LWIP_TCP_TIMESTAMPS             0
+#define LWIP_TCP_TIMESTAMPS             1
 #endif
 
 /**
@@ -1425,8 +1427,8 @@
  * send window while having a small receive window only.
  */
 #if !defined LWIP_WND_SCALE || defined __DOXYGEN__
-#define LWIP_WND_SCALE                  0
-#define TCP_RCV_SCALE                   0
+#define LWIP_WND_SCALE                  1
+#define TCP_RCV_SCALE                   3
 #endif
 
 /** LWIP_ALTCP==1: enable the altcp API
