@@ -55,7 +55,7 @@ extern "C" {
 #if LWIP_IPV6 && LWIP_IPV6_REASS  /* don't build if not configured for use in lwipopts.h */
 
 /** The IPv6 reassembly timer interval in milliseconds. */
-#define IP6_REASS_TMR_INTERVAL 1000
+#define IP6_REASS_TMR_INTERVAL 80
 
 /** IP6_FRAG_COPYHEADER==1: for platforms where sizeof(void*) > 4, "struct
  * ip6_reass_helper" is too large to be stored in the IPv6 fragment header, and

@@ -56,7 +56,7 @@ extern "C" {
 #endif
 
 /** 1 second period */
-#define ND6_TMR_INTERVAL 1000
+#define ND6_TMR_INTERVAL 80
 
 struct pbuf;
 struct netif;
