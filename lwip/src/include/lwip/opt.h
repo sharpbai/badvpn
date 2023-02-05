@@ -1197,7 +1197,7 @@
  * We define a larger window
  */
 #if !defined TCP_WND || defined __DOXYGEN__
-#define TCP_WND                         (16 * TCP_MSS)
+#define TCP_WND                         (32 * TCP_MSS)
 #endif
 
 /**
