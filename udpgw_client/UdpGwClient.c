@@ -569,7 +569,7 @@ void UdpGwClient_SubmitPacket (UdpGwClient *o, BAddr local_addr, BAddr remote_ad
             struct UdpGwClient_connection, connections_list_node);
         int closed_count = 0;
         while((con != last_con) && (o->num_connections > 10)) {
-            int isDns = con->conaddr.remote_addr.ipv4.port == htons(53);
+            int isDns = con->conaddr.remote_addr.ipv4.port == htons(53) || con->conaddr.remote_addr.ipv6.port == htons(53);
             int expireDNS = (currTime - con->last_use_time) > DNS_CONNECTION_DISCONNECT_TIMOUT;
             int expireUDP = (currTime - con->last_use_time) > UDP_CONNECTION_DISCONNECT_TIMOUT;
             int needClose = (isDns && expireDNS) || ((!isDns) && expireUDP);
@@ -578,7 +578,7 @@ void UdpGwClient_SubmitPacket (UdpGwClient *o, BAddr local_addr, BAddr remote_ad
             if (needClose) {
                 ++closed_count;
                 BLog(BLOG_DEBUG, "port=%d currTime=%d last_use_time=%d needClose=%d",
-                    htons(con->conaddr.remote_addr.ipv4.port), currTime, con->last_use_time, needClose);
+                    htons((con->conaddr.remote_addr.ipv4.port ? con->conaddr.remote_addr.ipv4.port : con->conaddr.remote_addr.ipv6.port)), currTime, con->last_use_time, needClose);
                 connection_free(con);
             }
             con = next_con;

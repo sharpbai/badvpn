@@ -913,7 +913,7 @@ void client_recv_if_handler_send (struct client *client, uint8_t *data, int data
             struct connection, connections_list_node);
         int closed_count = 0;
         while((con != last_con) && (client->num_connections > 10)) {
-            int isDns = con->addr.ipv4.port == htons(53);
+            int isDns = con->addr.ipv4.port == htons(53) || con->addr.ipv6.port == htons(53);
             int expireDNS = (currTime - con->last_use_time) > DNS_CONNECTION_DISCONNECT_TIMOUT;
             int expireUDP = (currTime - con->last_use_time) > UDP_CONNECTION_DISCONNECT_TIMOUT;
             int needClose = (isDns && expireDNS) || ((!isDns) && expireUDP);
@@ -922,7 +922,7 @@ void client_recv_if_handler_send (struct client *client, uint8_t *data, int data
             if (needClose) {
                 ++closed_count;
                 client_log(client, BLOG_DEBUG, "port=%d currTime=%d last_use_time=%d needClose=%d",
-                    htons(con->addr.ipv4.port), currTime, con->last_use_time, needClose);
+                    htons((con->addr.ipv4.port ? con->addr.ipv4.port : con->addr.ipv6.port)), currTime, con->last_use_time, needClose);
                 connection_close(con);
             }
             con = next_con;
