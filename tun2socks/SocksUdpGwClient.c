@@ -101,7 +101,7 @@ static void socks_client_handler (SocksUdpGwClient *o, int event)
         case BSOCKSCLIENT_EVENT_UP: {
             ASSERT(!o->socks_up)
             
-            BLog(BLOG_INFO, "SOCKS up");
+            BLog(BLOG_DEBUG, "SOCKS up");
             
             // connect udpgw client to SOCKS
             if (!UdpGwClient_ConnectServer(&o->udpgw_client, BSocksClient_GetSendInterface(&o->socks_client), BSocksClient_GetRecvInterface(&o->socks_client))) {
@@ -124,7 +124,7 @@ static void socks_client_handler (SocksUdpGwClient *o, int event)
         
         case BSOCKSCLIENT_EVENT_ERROR:
         case BSOCKSCLIENT_EVENT_ERROR_CLOSED: {
-            BLog(BLOG_INFO, "SOCKS error");
+            BLog(BLOG_DEBUG, "SOCKS error");
             
             // free SOCKS
             free_socks(o);

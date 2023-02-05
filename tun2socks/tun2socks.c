@@ -1119,7 +1119,7 @@ int process_device_udp_packet (uint8_t *data, int data_len)
                 goto fail;
             }
             
-            BLog(BLOG_INFO, "UDP: from device %d bytes", data_len);
+            BLog(BLOG_DEBUG, "UDP: from device %d bytes", data_len);
             
             // construct addresses
             BAddr_InitIPv4(&local_addr, ipv4_header.source_address, udp_header.source_port);
@@ -1163,7 +1163,7 @@ int process_device_udp_packet (uint8_t *data, int data_len)
                 goto fail;
             }
             
-            BLog(BLOG_INFO, "UDP/IPv6: from device %d bytes", data_len);
+            BLog(BLOG_DEBUG, "UDP/IPv6: from device %d bytes", data_len);
             
             // construct addresses
             BAddr_InitIPv6(&local_addr, ipv6_header.source_address, udp_header.source_port);
@@ -1377,7 +1377,7 @@ err_t listener_accept_func (void *arg, struct tcp_pcb *newpcb, err_t err)
     client->socks_up = 0;
     client->socks_closed = 0;
     
-    client_log(client, BLOG_INFO, "accepted");
+    client_log(client, BLOG_DEBUG, "accepted");
     
     DEAD_ENTER(client->dead_aborted)
     SYNC_COMMIT
@@ -1405,7 +1405,7 @@ void client_handle_freed_client (struct tcp_client *client)
     
     // if we have data to be sent to SOCKS and can send it, keep sending
     if (client->buf_used > 0 && !client->socks_closed) {
-        client_log(client, BLOG_INFO, "waiting untill buffered data is sent to SOCKS");
+        client_log(client, BLOG_DEBUG, "waiting untill buffered data is sent to SOCKS");
     } else {
         if (!client->socks_closed) {
             client_free_socks(client);
@@ -1485,7 +1485,7 @@ void client_free_socks (struct tcp_client *client)
     
     // if we have data to be sent to the client and we can send it, keep sending
     if (client->socks_up && (client->socks_recv_buf_used >= 0 || client->socks_recv_tcp_pending > 0) && !client->client_closed) {
-        client_log(client, BLOG_INFO, "waiting until buffered data is sent to client");
+        client_log(client, BLOG_DEBUG, "waiting until buffered data is sent to client");
     } else {
         if (!client->client_closed) {
             client_free_client(client);
@@ -1551,7 +1551,7 @@ void client_err_func (void *arg, err_t err)
     struct tcp_client *client = (struct tcp_client *)arg;
     ASSERT(!client->client_closed)
     
-    client_log(client, BLOG_INFO, "client error (%d)", (int)err);
+    client_log(client, BLOG_DEBUG, "client error (%d)", (int)err);
     
     // the pcb was taken care of by the caller
     client_handle_freed_client(client);
@@ -1567,7 +1567,7 @@ err_t client_recv_func (void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
     DEAD_ENTER(client->dead_aborted)
     
     if (!p) {
-        client_log(client, BLOG_INFO, "client closed");
+        client_log(client, BLOG_DEBUG, "client closed");
         client_free_client(client);
     } else {
         ASSERT(p->tot_len > 0)
@@ -1610,7 +1610,7 @@ void client_socks_handler (struct tcp_client *client, int event)
     
     switch (event) {
         case BSOCKSCLIENT_EVENT_ERROR: {
-            client_log(client, BLOG_INFO, "SOCKS error");
+            client_log(client, BLOG_DEBUG, "SOCKS error");
             
             client_free_socks(client);
         } break;
@@ -1618,7 +1618,7 @@ void client_socks_handler (struct tcp_client *client, int event)
         case BSOCKSCLIENT_EVENT_UP: {
             ASSERT(!client->socks_up)
             
-            client_log(client, BLOG_INFO, "SOCKS up");
+            client_log(client, BLOG_DEBUG, "SOCKS up");
             
             // init sending
             client->socks_send_if = BSocksClient_GetSendInterface(&client->socks_client);
@@ -1650,7 +1650,7 @@ void client_socks_handler (struct tcp_client *client, int event)
         case BSOCKSCLIENT_EVENT_ERROR_CLOSED: {
             ASSERT(client->socks_up)
             
-            client_log(client, BLOG_INFO, "SOCKS closed");
+            client_log(client, BLOG_DEBUG, "SOCKS closed");
             
             client_free_socks(client);
         } break;
@@ -1690,7 +1690,7 @@ void client_socks_send_handler_done (struct tcp_client *client, int data_len)
     }
     else if (client->client_closed) {
         // client was closed we've sent everything we had buffered; we're done with it
-        client_log(client, BLOG_INFO, "removing after client went down");
+        client_log(client, BLOG_DEBUG, "removing after client went down");
         
         client_free_socks(client);
     }
@@ -1758,7 +1758,7 @@ int client_socks_recv_send_out (struct tcp_client *client)
                 break;
             }
             
-            client_log(client, BLOG_INFO, "tcp_write failed (%d)", (int)err);
+            client_log(client, BLOG_DEBUG, "tcp_write failed (%d)", (int)err);
             
             client_abort_client(client);
             return -1;
@@ -1837,7 +1837,7 @@ err_t client_sent_func (void *arg, struct tcp_pcb *tpcb, u16_t len)
     } else {    
         // have we sent everything after SOCKS was closed?
         if (client->socks_closed && client->socks_recv_tcp_pending == 0) {
-            client_log(client, BLOG_INFO, "removing after SOCKS went down");
+            client_log(client, BLOG_DEBUG, "removing after SOCKS went down");
             client_free_client(client);
         }
     }
